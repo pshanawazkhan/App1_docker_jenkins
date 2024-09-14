@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     // Run Docker container
-                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker run -d -p 9090:9090 ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
