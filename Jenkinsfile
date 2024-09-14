@@ -1,14 +1,17 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.8.4-openjdk-17' // A Maven image with Docker
-            args '-v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket
-        }
+    agent any
+
+    tools {
+        maven 'maven' // Name defined in the Global Tool Configuration
     }
+
     environment {
-        DOCKER_IMAGE = 'pshanawaz/App1'
-        DOCKER_TAG = '4.0'
+        MAVEN_OPTS = '-Xms256m -Xmx512m'
+        DOCKER_IMAGE = 'pshanawaz/App1'               // Docker image name
+        DOCKER_TAG = '4.0'                            // Tag for the Docker image
+        DOCKER_CREDENTIALS_ID = 'dockerhub_credentials' // Credentials ID in Jenkins
     }
+
     stages {
         stage('Checkout') {
             steps {
@@ -18,22 +21,33 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean install'
+                script {
+                    def mvnHome = tool 'maven'
+                    // Build the project using Maven
+                    sh "${mvnHome}/bin/mvn clean install"
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                script {
+                    // Build Docker image
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
             }
         }
 
         stage('Deploy docker image') {
             steps {
-                sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                script {
+                    // Run Docker container
+                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
             }
         }
     }
+
     post {
         success {
             echo 'Docker image built and deployed successfully'
