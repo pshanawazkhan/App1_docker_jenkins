@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '-Xms256m -Xmx512m'
-        DOCKER_IMAGE = 'pshanawaz/App1'               // Docker image name
+        DOCKER_IMAGE = 'pshanawaz/app1'               // Docker image name
         DOCKER_TAG = '4.0'                            // Tag for the Docker image
         DOCKER_CREDENTIALS_ID = 'dockerhub_credentials' // Credentials ID in Jenkins
     }
