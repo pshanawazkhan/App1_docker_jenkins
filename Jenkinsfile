@@ -25,7 +25,7 @@ pipeline {
                 script {
                     def mvnHome = tool 'maven'
                     // Build the project using Maven
-                    bat "${mvnHome}\\bin\\mvn clean install"
+                    sh "${mvnHome}\\bin\\mvn clean install"
                 }
             }
         }
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker image
-                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
@@ -45,7 +45,7 @@ pipeline {
     steps {
         script {
             // Run Docker container
-            bat "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
         }
     }
 }
