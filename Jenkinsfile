@@ -3,14 +3,13 @@ pipeline {
 
     tools {
         maven 'maven' // Name defined in the Global Tool Configuration
-       // jdk 'jdk17'   // JDK tool
     }
 
     environment {
         MAVEN_OPTS = '-Xms256m -Xmx512m'
         DOCKER_IMAGE = 'pshanawaz/App1'               // Docker image name
-        DOCKER_TAG = '4.0'                                     // Tag for the Docker image
-        DOCKER_CREDENTIALS_ID = 'dockerhub_credentials'    // Credentials ID which we configure ->Id:- dockerhub_credentials
+        DOCKER_TAG = '4.0'                            // Tag for the Docker image
+        DOCKER_CREDENTIALS_ID = 'dockerhub_credentials' // Credentials ID in Jenkins
     }
 
     stages {
@@ -25,7 +24,7 @@ pipeline {
                 script {
                     def mvnHome = tool 'maven'
                     // Build the project using Maven
-                    sh "${mvnHome}\\bin\\mvn clean install"
+                    sh "${mvnHome}/bin/mvn clean install"
                 }
             }
         }
@@ -39,26 +38,22 @@ pipeline {
             }
         }
 
-        //deploying docker image in docker container
-        
         stage('Deploy docker image') {
-    steps {
-        script {
-            // Run Docker container
-            sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            steps {
+                script {
+                    // Run Docker container
+                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                }
+            }
         }
-    }
-}
-        
-        
     }
 
     post {
         success {
-            echo 'Docker image build and deployed  sucessfully'
+            echo 'Docker image built and deployed successfully'
         }
         failure {
-            echo 'Build failed. Docker image not depoyed.....'
+            echo 'Build failed. Docker image not deployed.....'
         }
     }
 }
