@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'shanawaz', url: 'https://github.com/pshanawazkhan/aws-api-gateway.git'
+                git branch: 'arha', url: 'https://github.com/pshanawazkhan/App1_docker_jenkins.git'
             }
         }
 
@@ -58,7 +58,7 @@ pipeline {
             echo 'Docker image build and deployed  sucessfully'
         }
         failure {
-            echo 'Build failed. Docker image not pushed.'
+            echo 'Build failed. Docker image not depoyed.....'
         }
     }
 }
