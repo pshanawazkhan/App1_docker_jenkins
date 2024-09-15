@@ -29,4 +29,11 @@ public class MainController {
 		return "working with Docker image";
 	}
 	
+	@GetMapping("/jenkins")
+	public String DockerInsideJenkins() {
+		
+		
+		return "Tried all way by going with docker inside the the jenkins approach.....";
+	}
+	
 }
