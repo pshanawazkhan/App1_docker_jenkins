@@ -23,4 +23,10 @@ public class MainController {
 	}
 	
 	
+	@GetMapping("/docker") 
+	public String dockerImage() {
+		
+		return "working with Docker image";
+	}
+	
 }
