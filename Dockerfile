@@ -1,7 +1,8 @@
 FROM openjdk:17
 
 
-WORKDIR /app1
-EXPOSE 9090
-COPY ./target/App1.jar /app1
+WORKDIR /App1
+EXPOSE 9096
+COPY /target/App1.jar /App1
 CMD [ "java","-jar","App1.jar" ]
+

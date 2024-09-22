@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1   # Corrected
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1              # Corrected
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1            # Removed duplicate entry
+      KAFKA_MAX_MESSAGE_BYTES: 1200000000                  # Broker level settings
+      KAFKA_MESSAGE_MAX_BYTES: 1200000000                  # Producer-level setting
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 1200000000            # Replica-level setting
+    ports:
+      - "9092:9092"
+    networks:
+      - app-network
+
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:7.4.0
+    container_name: kafkadb
+    depends_on:
+      - kafka
+    environment:
+      KSQL_CONFIG_DIR: "/etc/ksqldb"
+      KSQL_BOOTSTRAP_SERVERS: "kafka:9092"
+      KSQL_LISTENERS: "http://0.0.0.0:8088"
+    ports:
+      - "8088:8088"
+    networks:
+      - app-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafkaui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  mysql-db:
+    image: mysql:latest 
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test
+    container_name: mysql-db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network  # Use the same network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 30s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  app:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    container_name: app-1
+    ports:
+      - "9096:9096"  # Avoid port conflict with Kafka
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/test
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092  # Use service name here
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
